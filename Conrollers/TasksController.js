@@ -1,10 +1,10 @@
-let tasks = [{ id: 1, name: 'wash the dishes', status: 'done' }];
+let tasks = [{ id: 1, name: 'wash the dishes', isComplete: true }];
 
 const TaskController = {
     getAll: (req, res) => {
         const { status } = req.query;
         const filteredTasks = status
-            ? tasks.filter(task => task.status === status)
+            ? tasks.filter(task => task.isComplete === status)
             : tasks;
 
         res.status(200).json({
@@ -31,19 +31,19 @@ const TaskController = {
     },
 
     create: (req, res) => {
-        const { name, status } = req.body;
+        const { name } = req.body;
 
-        if (!name || !status) {
+        if (!name) {
             return res.status(400).json({
                 success: false,
-                message: 'Name and status are required'
+                message: 'Name is required'
             });
         }
 
         const newTask = {
             id: tasks.length ? tasks[tasks.length - 1].id + 1 : 1,
             name,
-            status
+            isComplete: false
         };
 
         tasks.push(newTask);
@@ -57,7 +57,7 @@ const TaskController = {
 
     update: (req, res) => {
         const id = parseInt(req.params.id);
-        const { name, status } = req.body;
+        const { isComplete } = req.body;
 
         const index = tasks.findIndex(task => task.id === id);
         if (index === -1) {
@@ -66,8 +66,8 @@ const TaskController = {
                 message: `Task with ID ${id} not found`
             });
         }
-
-        if (!name && !status) {
+        
+        if (typeof isComplete !== 'boolean') {
             return res.status(400).json({
                 success: false,
                 message: 'At least one of name or status is required to update'
@@ -76,8 +76,7 @@ const TaskController = {
 
         tasks[index] = {
             ...tasks[index],
-            ...(name && { name }),
-            ...(status && { status })
+            ...(isComplete && { isComplete })
         };
 
         res.status(200).json({
